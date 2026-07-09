@@ -1,0 +1,1811 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reservas Smart Flex</title>
+  <style>
+    /* =========================================
+       ESTILOS GENERALES Y MODERNIZACIÓN
+       ========================================= */
+    :root {
+      --primary: #0b74de;
+      --primary-hover: #095bb0;
+      --bg-color: #f4f7fb;
+      --card-bg: #ffffff;
+      --text-main: #12243a;
+      --text-muted: #6b7684;
+      --border-color: #e1e5eb;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      padding: 0;
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    .card {
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 16px;
+      margin: 12px 0;
+      background: var(--card-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: 0.95em;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    .btn.secondary:hover { background: #f0f7ff; }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .dateList .card { cursor: pointer; }
+    .backBtn { margin-bottom: 16px; display: inline-flex; align-items: center; gap: 8px;}
+
+    /* =========================================
+       HEADER
+       ========================================= */
+    .app-header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .app-header .logo {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+    .app-header .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .btn-logout {
+      background: none;
+      border: none;
+      color: #d93025;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover {
+      background: #fce8e6;
+    }
+
+    /* =========================================
+       LOGIN & SELECTOR (ESTILO MINIMALISTA)
+       ========================================= */
+    #loginContainer, #selectorContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: var(--primary);
+      padding: 20px;
+    }
+    .login-card, .selector-card {
+      background: var(--card-bg);
+      padding: 48px 40px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 420px;
+      text-align: left;
+      box-sizing: border-box;
+    }
+    .login-brand {
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 24px;
+      display: inline-block;
+    }
+    .login-card h2, .selector-card h2 { 
+      margin: 0 0 8px 0; 
+      color: var(--text-main); 
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .login-card p, .selector-card p { 
+      margin-bottom: 32px; 
+      color: var(--text-muted); 
+      font-size: 1.05rem; 
+    }
+    .login-card input, .selector-card select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 18px;
+      margin-bottom: 20px;
+      background-color: #f4f7fb;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s;
+      color: var(--text-main);
+    }
+    .login-card input::placeholder {
+      color: #9aa5b1;
+      font-weight: 400;
+    }
+    .login-card input:focus, .selector-card select:focus {
+      background-color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(11, 116, 222, 0.1);
+    }
+    .login-card .btn, .selector-card .btn { 
+      width: 100%; 
+      padding: 18px; 
+      font-size: 1.1rem; 
+      border-radius: 12px;
+    }
+    .login-error {
+      color: #d93025;
+      background: #fce8e6;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-align: left;
+      line-height: 1.5;
+      display: none;
+    }
+
+    #appContent {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* Mensaje Bienvenida Principal */
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0 0 24px 0;
+      letter-spacing: -0.5px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #202b36;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+    }
+    .toast.show {
+      bottom: 40px;
+    }
+
+    /* =========================================
+       MODALES & OVERLAYS
+       ========================================= */
+    .modal-back {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(18, 36, 58, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+
+    .tz-header {
+      margin-bottom: 20px;
+      font-size: 0.95em;
+      color: #12243a;
+      background: #eef4fb;
+      padding: 16px;
+      border-radius: 12px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .no-available-box {
+      border: 1px dashed #c0d3e6;
+      padding: 24px;
+      border-radius: 16px;
+      margin: 20px 0;
+      background: #f8fbff;
+      text-align: center;
+    }
+
+    /* Alertas visuales destacadas */
+    .info-alert {
+      background: #eef6ff;
+      border-left: 5px solid var(--primary);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .info-alert-title {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+      margin: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-alert-body {
+      color: var(--text-main);
+      font-size: 1rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .info-alert-highlight {
+      background: #fff;
+      border: 1px solid #cfe6fb;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      box-shadow: 0 2px 6px rgba(11, 116, 222, 0.05);
+    }
+
+    /* Modal General */
+    .modal {
+      background: #fff;
+      padding: 32px;
+      border-radius: 24px;
+      width: 92%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow: auto;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    .modal h3 { margin: 0 0 12px 0; font-size: 1.5rem; letter-spacing: -0.5px; }
+    .modal .muted { line-height: 1.5; font-size: 1rem;}
+
+    /* Formularios */
+    .resv-form, .desired-form { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+    .form-row { display: flex; flex-direction: column; gap: 8px; }
+
+    input[type="text"], input[type="email"], textarea {
+      width: 100%; box-sizing: border-box; padding: 14px;
+      border-radius: 10px; border: 1px solid var(--border-color);
+      font-size: 1.05rem; background: #fff; outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(11, 116, 222, 0.15);
+    }
+
+    .resv-actions, .desired-actions {
+      display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap;
+    }
+
+    .btn.resv-cancel {
+      background: #f4f7fb; color: #12243a; border: none; font-weight: 600;
+    }
+    .btn.resv-cancel:hover { background: #e1e5eb; }
+
+    @media (max-width:480px) {
+      .resv-actions .btn, .desired-actions .btn { flex: 1 1 100%; }
+      .login-card, .selector-card { padding: 32px 24px; }
+      .modal { padding: 24px; }
+    }
+
+    .chip-btn {
+      background: #eef6ff; border: 1px solid #cfe6fb; color: var(--primary);
+      padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600;
+      display: inline-flex; align-items: center; transition: background 0.2s;
+    }
+    .chip-btn:hover { background: #dceaf9; }
+
+    .mini-summary {
+      margin-left: 10px; display: inline-block; font-size: 0.95rem; color: #12243a;
+      background: #f4f7fb; padding: 8px 14px; border-radius: 999px; border: 1px solid #e1e5eb;
+      font-weight: 500;
+    }
+
+    .options-panel {
+      border: 1px solid #eef4fb; background: #fafcff; padding: 16px; border-radius: 12px; margin-top: 10px;
+    }
+    .option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    @media (max-width:420px) { .option-grid { grid-template-columns: repeat(1, 1fr); } }
+
+    .option-row {
+      display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 8px;
+      transition: background .12s; border: 1px solid transparent; background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .option-row:hover { background: #f0f7ff; border-color: #cfe6fb; cursor: pointer; }
+    .option-row label { cursor: pointer; font-size: 1rem; width: 100%; font-weight: 500;}
+    .small-note { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px; }
+
+    /* Móvil: apilar hora y botón */
+    #slotsList { max-height: 54vh; overflow: auto; -webkit-overflow-scrolling: touch; padding-right: 5px;}
+    .start-actions { display: flex; gap: 12px; margin: 16px 0 24px 0; flex-wrap: wrap; }
+    .start-actions .btn { padding: 14px 20px; font-size: 1.05rem; border-radius: 12px; }
+
+    /* =========================================
+       SPINNER (Loading)
+       ========================================= */
+    .spinner-back {
+      position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(18, 36, 58, 0.4); z-index: 10050;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+    }
+    .spinner-box {
+      background: #fff; padding: 20px 24px; border-radius: 16px;
+      display: flex; gap: 16px; align-items: center; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+    .spinner-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 4px solid #f4f7fb; border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
+    /* =========================================
+       TARJETAS DE HORAS (COMPACTAS)
+       ========================================= */
+    .slot-card {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; margin-bottom: 12px; background: #ffffff;
+      border: 1px solid #e1e5eb; border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    .slot-card:hover {
+      border-color: #cfe6fb; box-shadow: 0 6px 16px rgba(11, 116, 222, 0.08); transform: translateY(-2px);
+    }
+    .slot-time-main { font-size: 1.15rem; font-weight: 700; color: #12243a;}
+    .slot-time-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+    .btn-reserve {
+      background: #f4f7fb; color: var(--primary); border: none;
+      padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 1rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-reserve:hover { background: var(--primary); color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <div id="loginContainer">
+    <div class="login-card">
+      <div class="login-brand">Smart Flex</div>
+      <h2>Bienvenido</h2>
+      <p>Ingresa tu documento para reservar o cancelar tus clases.</p>
+      
+      <form id="loginForm" autocomplete="off">
+        <div id="loginError" class="login-error"></div>
+        <input type="text" id="loginDoc" placeholder="Número de documento" required />
+        <button type="submit" class="btn" id="loginBtn">Ingresar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="selectorContainer" style="display:none;">
+    <div class="selector-card">
+      <div class="login-brand">Smart Flex</div>
+      <h2>Selección de Clase</h2>
+      <p>Por favor selecciona el subnivel y la clase que deseas programar hoy.</p>
+      
+      <form id="selectorForm">
+        <label for="selectSubnivel" style="font-weight:700; font-size:0.95em; color:var(--text-main); display:block; margin-bottom:6px;">SUBNIVEL</label>
+        <select id="selectSubnivel" required>
+          <option value="">-- Selecciona Subnivel --</option>
+        </select>
+
+        <label for="selectClase" style="font-weight:700; font-size:0.95em; color:var(--text-main); display:block; margin-top:10px; margin-bottom:6px;">CLASE</label>
+        <select id="selectClase" required disabled>
+          <option value="">-- Primero elige un Subnivel --</option>
+        </select>
+
+        <button type="submit" class="btn" style="margin-top:16px;">Continuar a Horarios</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="appContainer" style="display:none;">
+    
+    <div class="app-header">
+      <div class="logo">Smart Flex</div>
+      <div class="user-info">
+        <span id="headerUserName"></span>
+        <button onclick="logout()" class="btn-logout">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div id="appContent">
+      <h2 id="welcomeTitle" class="welcome-title"></h2>
+      
+      <div style="background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+        <div class="row">
+          <div>
+            <h3>Tus Reservas</h3>
+            <div id="subnivelBadge" class="muted" style="margin-bottom:6px; font-size:1.05rem; display:none;">
+              Subnivel: <strong id="valSubnivel" style="color:#12243a"></strong>
+            </div>
+            <div id="claseBadge" class="muted" style="font-size:1.05rem; display:none;">
+              Clase: <strong id="valClase" style="color:#12243a"></strong>
+            </div>
+          </div>
+          <div>
+            <button id="btnCambiarClase" class="btn secondary" style="display:none; padding:8px 14px; font-size:0.9rem;" onclick="showSelectorUI()">Cambiar</button>
+          </div>
+        </div>
+        
+        <div class="tz-header" style="margin-top:20px">
+          <span>Las fechas y horas mostradas corresponden a la zona horaria: <strong><?= PROGRAMMER_TZ ?></strong></span>
+          <br/>
+          <span id="userTzInfo" class="muted" style="display:inline-block; margin-top:6px;">Detectando tu zona horaria...</span>
+          <a href="#" id="tzSwitch" style="display:none; margin-left:10px; font-size:0.95em; font-weight:600; text-decoration:none; color:var(--primary)" onclick="switchToProgrammerTz(event)">¿Hora incorrecta? Ver en hora Colombia</a>
+        </div>
+
+        <div class="start-actions" role="navigation">
+          <button id="btnProgramar" class="btn" onclick="startProgramar()">Programar clase</button>
+          <button id="btnCancelar" class="btn secondary" onclick="openCancelModal()">Cancelar clase</button>
+          <button id="btnVerificar" class="btn secondary" onclick="openVerifyModal()">Verificar reserva</button>
+        </div>
+
+        <div id="mainArea">
+          <div id="datesArea">
+            <div id="datesMessage" class="muted" style="font-size: 1.1rem; margin-bottom: 12px;"></div>
+            <div id="datesList" class="dateList"></div>
+
+            <div class="no-available-box" style="margin-top:24px">
+              <div style="font-weight: 600; font-size: 1.1rem; color: #12243a; margin-bottom: 8px;">¿No encuentras disponibilidad?</div>
+              <div class="muted">Dinos a qué hora te gustaría ver tus clases.</div>
+              <div style="margin-top:16px">
+                <button id="desiredBtnMain" class="btn secondary" onclick="openDesiredModal('main')">Solicitar horario deseado</button>
+                <span id="mainSummary" class="mini-summary" style="display:none"></span>
+              </div>
+            </div>
+          </div>
+
+          <div id="slotsArea" style="display:none">
+            <button class="backBtn btn secondary" onclick="showDates()">← Volver a fechas</button>
+            <div id="slotsMessage" class="muted" style="margin-top:16px; font-size: 1.1rem;">Selecciona una fecha</div>
+            <div id="slotsList"></div>
+
+            <div class="no-available-box" style="margin-top:24px">
+              <div style="font-weight: 600; font-size: 1.1rem; color: #12243a; margin-bottom: 8px;">¿No encuentras la hora que buscas?</div>
+              <div class="muted">Dinos a qué hora puedes o te gustaría ver tus clases.</div>
+              <div style="margin-top:16px">
+                <button id="desiredBtnSlots" class="btn secondary" onclick="openDesiredModal('slots')">Solicitar horario deseado</button>
+                <span id="slotsSummary" class="mini-summary" style="display:none"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="welcomeToast" class="toast"></div>
+  <div id="spinnerOverlay" style="display:none" aria-hidden="true"></div>
+  <div id="modalRoot" style="display:none"></div>
+
+
+
+  <script>
+    // ==========================================
+    // 1. ADAPTADOR DE API (SHIM PARA IFRAME EXTERNO)
+    // ==========================================
+    const APPS_SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbyj3pz-obEH1YJYmFASTwlLtZK_Qv5mkLFNFI5FGrsCivLbBndcxcIPcwHqFNO7I3DX/exec";
+
+    const apiCall = {
+      _successHandler: null,
+      _failureHandler: null,
+
+      withSuccessHandler(fn) {
+        this._successHandler = fn;
+        return this;
+      },
+
+      withFailureHandler(fn) {
+        this._failureHandler = fn;
+        return this;
+      },
+
+      _get(action, params = {}) {
+        const url = new URL(APPS_SCRIPT_API_URL);
+        url.searchParams.append("api", "1");
+        url.searchParams.append("action", action);
+        Object.keys(params).forEach(key => {
+          if (params[key] !== undefined && params[key] !== null) {
+            url.searchParams.append(key, params[key]);
+          }
+        });
+
+        fetch(url.toString(), { method: "GET", mode: "cors", redirect: "follow" })
+          .then(response => response.json())
+          .then(data => { if (this._successHandler) this._successHandler(data); })
+          .catch(err => {
+            console.error("API GET Error:", err);
+            if (this._failureHandler) this._failureHandler(err);
+          });
+      },
+
+      _post(action, payload = {}) {
+        const url = `${APPS_SCRIPT_API_URL}?api=1`;
+        fetch(url, {
+          method: "POST",
+          mode: "cors",
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: action, ...payload })
+        })
+        .then(response => response.json())
+        .then(data => { if (this._successHandler) this._successHandler(data); })
+        .catch(err => {
+          console.error("API POST Error:", err);
+          if (this._failureHandler) this._failureHandler(err);
+        });
+      },
+
+      loginUser(doc) { this._get("login", { documento: doc }); },
+      getAvailableSlots(subnivel) { this._get("getAvailableSlots", { subnivel: subnivel }); },
+      getSlotsForDate(subnivel, dateStr) { this._get("getSlotsForDate", { subnivel: subnivel, dateStr: dateStr }); },
+      getStudentBooking(email, doc, clase, subnivel) { this._get("getStudentBooking", { documento: doc, clase: clase, subnivel: subnivel }); },
+      verifyStudentBooking(doc) { this._get("verifyStudentBooking", { documento: doc }); },
+      handleCancelRequest(content) { this._post("cancel", content); },
+      bookSlot(data) { this._post("book", data); },
+      saveDesiredRequest(payload) { this._post("saveDesiredRequest", { payload: payload }); },
+      logFailedBookingToBigQuery(data) { /* Opción en segundo plano */ }
+    };
+
+    // Redirigir google.script.run hacia nuestro adaptador
+    window.google = window.google || {};
+    window.google.script = { run: apiCall };
+
+    // ==========================================
+    // 2. CONFIG & STATE (ADAPTADO PARA CDN ESTÁTICO)
+    // ==========================================
+    // Leemos el subnivel y la clase directamente desde la URL de Brightspace
+    const urlParams = new URLSearchParams(window.location.search);
+    let SUBNIVEL = urlParams.get('subnivel') || '';
+    let CLASS_IDX = urlParams.get('clase') || '';
+    
+    const PROGRAMMER_TZ = 'America/Bogota';
+    
+    // Catálogo de respaldo para el selector manual
+    const CATALOGO_CLASES = {
+      "A1.1": [1, 15], "A1.2": [1, 15], "A1.3": [1, 15],
+      "A2.1": [1, 15], "A2.2": [1, 15], "A2.3": [1, 15],
+      "B1.1": [1, 15], "B1.2": [1, 15], "B1.3": [1, 15],
+      "B2.1": [1, 15], "B2.2": [1, 15], "B2.3": [1, 15],
+      "C1.1": [1, 15], "C1.2": [1, 15], "C1.3": [1, 15]
+    };
+    
+    let USER_TZ = 'UTC';
+    let CURRENT_DATE = null;
+    let SESSION_DATA = null;
+
+    const SESSION_KEY = 'smartflex_session';
+    const DESIRED_PREFIX = 'desiredSelections:v1:';
+    const CLIENT_CACHE = { subnivel: null, slots: null, datesBySubnivel: {} };
+
+
+
+
+    // ==========================================
+    // LÓGICA DE INICIO Y CIERRE DE SESIÓN
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", () => {
+      initApp();
+      
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const doc = document.getElementById('loginDoc').value.trim();
+        if(!doc) return;
+        
+        const btn = document.getElementById('loginBtn');
+        const err = document.getElementById('loginError');
+        btn.innerText = 'Validando...';
+        btn.disabled = true;
+        err.style.display = 'none';
+
+        google.script.run
+          .withSuccessHandler(res => {
+            btn.innerText = 'Ingresar';
+            btn.disabled = false;
+            if(res.ok) {
+              localStorage.setItem(SESSION_KEY, JSON.stringify(res));
+              initApp();
+              showWelcomeToast(res.primerNombre);
+            } else {
+              err.innerHTML = res.error.replace(/\n/g, '<br>');
+              err.style.display = 'block';
+            }
+          })
+          .withFailureHandler(error => {
+            btn.innerText = 'Ingresar';
+            btn.disabled = false;
+            err.innerText = 'Error de conexión. Inténtalo nuevamente.';
+            err.style.display = 'block';
+          })
+          .loginUser(doc);
+      });
+
+      // INICIALIZAR EVENTOS DEL SELECTOR DE SUBNIVEL (NUEVO)
+      initSelectorEvents();
+    });
+
+    function initApp() {
+      const saved = localStorage.getItem(SESSION_KEY);
+      if(saved) {
+        try {
+          SESSION_DATA = JSON.parse(saved);
+          if (SESSION_DATA.documento && SESSION_DATA.nombreCompleto) {
+            document.getElementById('loginContainer').style.display = 'none';
+            
+            // VERIFICACIÓN SPA: Si no hay parámetros (acceso directo sin iframe), mostrar selector
+            if (!SUBNIVEL || !CLASS_IDX) {
+              showSelectorUI();
+              return;
+            }
+
+            // Flujo normal (o tras haber seleccionado en la UI)
+            showMainAppUI();
+            return;
+          }
+        } catch(e) {}
+      }
+      
+      // Mostrar login por defecto
+      document.getElementById('appContainer').style.display = 'none';
+      document.getElementById('selectorContainer').style.display = 'none';
+      document.getElementById('loginContainer').style.display = 'flex';
+    }
+
+    // ==========================================
+    // LÓGICA DEL SELECTOR DE SUBNIVEL Y CLASE (NUEVO)
+    // ==========================================
+    function initSelectorEvents() {
+      const selSub = document.getElementById('selectSubnivel');
+      const selClase = document.getElementById('selectClase');
+
+      // 1. Poblar subniveles disponibles desde el catálogo inyectado
+      Object.keys(CATALOGO_CLASES).forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        selSub.appendChild(opt);
+      });
+
+      // 2. Al cambiar el subnivel, generar dinámicamente las opciones de clase
+      selSub.addEventListener('change', () => {
+        const selectedSub = selSub.value;
+        selClase.innerHTML = '<option value="">-- Selecciona Clase --</option>';
+        
+        if (selectedSub && CATALOGO_CLASES[selectedSub]) {
+          const rango = CATALOGO_CLASES[selectedSub];
+          for (let c = rango[0]; c <= rango[1]; c++) {
+            const opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = 'Clase ' + c;
+            selClase.appendChild(opt);
+          }
+          selClase.disabled = false;
+        } else {
+          selClase.innerHTML = '<option value="">-- Primero elige un Subnivel --</option>';
+          selClase.disabled = true;
+        }
+      });
+
+      // 3. Confirmar selección e iniciar el dashboard
+      document.getElementById('selectorForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        SUBNIVEL = selSub.value;
+        CLASS_IDX = selClase.value;
+        
+        if (SUBNIVEL && CLASS_IDX) {
+          showMainAppUI();
+        }
+      });
+    }
+
+    function showSelectorUI() {
+      document.getElementById('appContainer').style.display = 'none';
+      document.getElementById('selectorContainer').style.display = 'flex';
+      
+      // Si el usuario decidió cambiar, precargar los selects con sus valores actuales
+      if (SUBNIVEL) {
+        const selSub = document.getElementById('selectSubnivel');
+        selSub.value = SUBNIVEL;
+        selSub.dispatchEvent(new Event('change'));
+        if (CLASS_IDX) {
+          document.getElementById('selectClase').value = CLASS_IDX;
+        }
+      }
+    }
+
+    function showMainAppUI() {
+      document.getElementById('selectorContainer').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'block';
+      
+      // Textos de usuario
+      document.getElementById('headerUserName').innerText = SESSION_DATA.nombreCompleto;
+      const firstName = SESSION_DATA.primerNombre || SESSION_DATA.nombreCompleto.split(' ')[0];
+      document.getElementById('welcomeTitle').innerText = '¡Hola, ' + firstName + '!';
+      
+      // Actualizar Badges dinámicos de Subnivel y Clase
+      if (SUBNIVEL) {
+        document.getElementById('valSubnivel').innerText = SUBNIVEL;
+        document.getElementById('subnivelBadge').style.display = 'block';
+      }
+      if (CLASS_IDX) {
+        document.getElementById('valClase').innerText = CLASS_IDX;
+        document.getElementById('claseBadge').style.display = 'block';
+      }
+
+      // Habilitar botón de "Cambiar" si se detecta que podemos elegir manualmente
+      document.getElementById('btnCambiarClase').style.display = 'inline-block';
+      
+      updateDesiredButtons();
+      checkForUrlActions();
+      
+      // Si veníamos de otra selección, limpiar el área y volver a la vista principal
+      document.getElementById('slotsArea').style.display = 'none';
+      document.getElementById('datesArea').style.display = 'block';
+      document.getElementById('datesList').innerHTML = '';
+      document.getElementById('datesMessage').innerText = 'Presiona "Programar clase" para comenzar.';
+    }
+
+    function logout() {
+      localStorage.removeItem(SESSION_KEY);
+      SESSION_DATA = null;
+      document.getElementById('loginDoc').value = '';
+      document.getElementById('loginError').style.display = 'none';
+      initApp();
+    }
+
+    function showWelcomeToast(name) {
+      const toast = document.getElementById('welcomeToast');
+      toast.innerText = '¡Bienvenido(a), ' + name + '!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function checkForUrlActions() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const action = searchParams.get('action');
+      if (action === 'cancel') {
+        const bId = searchParams.get('bookingId');
+        const token = searchParams.get('token');
+        if(bId && token) {
+          openCancelModal({ bookingId: bId, token: token });
+        }
+      }
+    }
+
+    function switchToProgrammerTz(e) {
+      if(e) e.preventDefault();
+      USER_TZ = PROGRAMMER_TZ; 
+      
+      const el = document.getElementById('userTzInfo');
+      if (el) el.innerText = 'Modo manual: Las horas se muestran en ' + PROGRAMMER_TZ;
+      document.getElementById('tzSwitch').style.display = 'none';
+
+      if (document.getElementById('slotsArea').style.display !== 'none' && CURRENT_DATE) {
+         loadSlots(CURRENT_DATE); 
+      }
+    }
+
+    (function() {
+      try {
+        USER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      } catch (e) {
+        USER_TZ = 'UTC';
+      }
+      const el = document.getElementById('userTzInfo');
+      const switchBtn = document.getElementById('tzSwitch');
+      
+      if (el) {
+        if (USER_TZ === PROGRAMMER_TZ) {
+          el.innerText = 'Tu zona coincide con ' + PROGRAMMER_TZ + ' — las horas se muestran en esa zona.';
+          if(switchBtn) switchBtn.style.display = 'none';
+        } else {
+          el.innerText = 'Mostrando horas ajustadas a tu zona detectada: ' + USER_TZ;
+          if(switchBtn) switchBtn.style.display = 'inline';
+        }
+      }
+    })();
+
+    // ==========================================
+    // SPINNER HELPERS
+    // ==========================================
+    function createSpinnerElement(message) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'spinner-back';
+      wrapper.setAttribute('role', 'status');
+      wrapper.setAttribute('aria-live', 'polite');
+      wrapper.innerHTML = `
+          <div class="spinner-box" role="presentation">
+            <div class="spinner-circle" aria-hidden="true"></div>
+            <div>
+              <div style="font-size:1.05rem; font-weight:600; color:#12243a;">${escapeHtml(message || 'Procesando...')}</div>
+            </div>
+          </div>
+        `;
+      return wrapper;
+    }
+
+    function showSpinner(message) {
+      hideSpinner();
+      const overlay = createSpinnerElement(message || 'Procesando...');
+      overlay.id = 'spinnerOverlayInner';
+      const container = document.getElementById('spinnerOverlay');
+      container.style.display = 'flex';
+      container.appendChild(overlay);
+    }
+
+    function hideSpinner() {
+      const container = document.getElementById('spinnerOverlay');
+      if (container) {
+        container.style.display = 'none';
+        const inner = document.getElementById('spinnerOverlayInner');
+        if (inner && inner.parentNode) inner.parentNode.removeChild(inner);
+      }
+    }
+
+    // ==========================================
+    // PERSISTENCE & UTILS
+    // ==========================================
+    function saveDesiredState(origin, state) {
+      try {
+        const key = DESIRED_PREFIX + (SUBNIVEL || 'any') + ':' + (origin || 'any');
+        sessionStorage.setItem(key, JSON.stringify(state || {}));
+        updateDesiredButtons();
+      } catch (e) {}
+    }
+
+    function loadDesiredState(origin) {
+      try {
+        const key = DESIRED_PREFIX + (SUBNIVEL || 'any') + ':' + (origin || 'any');
+        const r = sessionStorage.getItem(key);
+        return r ? JSON.parse(r) : { weekdays: [], saturday: [], observaciones: '' };
+      } catch (e) {
+        return { weekdays: [], saturday: [], observaciones: '' };
+      }
+    }
+
+    function clearDesiredState(origin) {
+      try {
+        const key = DESIRED_PREFIX + (SUBNIVEL || 'any') + ':' + (origin || 'any');
+        sessionStorage.removeItem(key);
+        updateDesiredButtons();
+      } catch (e) {}
+    }
+
+    function formatSummary(arr, maxItems) {
+      if (!arr || arr.length === 0) return '';
+      const n = Math.min(maxItems || 2, arr.length);
+      const first = arr.slice(0, n).join(', ');
+      return arr.length > n ? (first + ' (+' + (arr.length - n) + ')') : first;
+    }
+
+    function escapeHtml(str) {
+      if (!str && str !== 0) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function getOrCreateDeviceId() {
+      try {
+        let deviceId = localStorage.getItem('device_telemetry_id');
+        if (!deviceId) {
+          deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem('device_telemetry_id', deviceId);
+        }
+        return deviceId;
+      } catch (e) {
+        return 'error_localstorage';
+      }
+    }
+
+    function updateDesiredButtons() {
+      try {
+        const updateButtonState = (btnId, summaryId, origin) => {
+          const btn = document.getElementById(btnId);
+          const pill = document.getElementById(summaryId);
+          if (!btn || !pill) return;
+          const state = loadDesiredState(origin);
+          const lv = state.weekdays || [];
+          const sv = state.saturday || [];
+          if (lv.length === 0 && sv.length === 0) {
+            pill.style.display = 'none';
+            btn.innerText = 'Solicitar horario deseado';
+          } else {
+            pill.style.display = 'inline-block';
+            const parts = [];
+            if (lv.length) parts.push('L-V: ' + formatSummary(lv, 2));
+            if (sv.length) parts.push('Sáb: ' + formatSummary(sv, 2));
+            pill.innerText = parts.join(' • ');
+            btn.innerText = 'Modificar información'; 
+          }
+        };
+        updateButtonState('desiredBtnSlots', 'slotsSummary', 'slots');
+        updateButtonState('desiredBtnMain', 'mainSummary', 'main');
+      } catch (e) { }
+    }
+
+    // ==========================================
+    // DATES & SLOTS LOGIC
+    // ==========================================
+    function formatDateDisplay(iso) {
+      if (!iso) return iso;
+      try {
+        const parts = iso.split('-');
+        if (parts.length !== 3) return iso;
+        const y = Number(parts[0]), mo = Number(parts[1]) - 1, d = Number(parts[2]);
+        const dt = new Date(y, mo, d);
+        const opts = { weekday: 'long', day: '2-digit', month: 'long' };
+        let s = new Intl.DateTimeFormat('es-CO', opts).format(dt);
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      } catch (e) { return iso; }
+    }
+
+    function startProgramar() {
+      if (!SUBNIVEL) {
+        showSelectorUI();
+        return;
+      }
+      CLIENT_CACHE.slots = null;
+      CLIENT_CACHE.subnivel = null;
+      document.getElementById('slotsArea').style.display = 'none';
+      document.getElementById('datesArea').style.display = 'block';
+      loadDates();
+    }
+
+    function showDates() {
+      document.getElementById('slotsArea').style.display = 'none';
+      document.getElementById('datesArea').style.display = 'block';
+    }
+
+    function showSlotsUI() {
+      document.getElementById('datesArea').style.display = 'none';
+      document.getElementById('slotsArea').style.display = 'block';
+    }
+
+    function loadDates() {
+      document.getElementById('datesMessage').innerText = 'Cargando fechas disponibles...';
+      showSpinner('Cargando fechas...');
+      if (CLIENT_CACHE.subnivel === SUBNIVEL && CLIENT_CACHE.slots) {
+        hideSpinner();
+        renderDatesFromSlots(CLIENT_CACHE.slots);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          hideSpinner();
+          if (!resp || !resp.ok) {
+            document.getElementById('datesMessage').innerText = 'Error: ' + (resp && resp.error ? resp.error : 'No se pudieron obtener fechas');
+            return;
+          }
+          CLIENT_CACHE.subnivel = SUBNIVEL;
+          CLIENT_CACHE.slots = resp.slots || [];
+          renderDatesFromSlots(CLIENT_CACHE.slots);
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          document.getElementById('datesMessage').innerText = 'Error de conexión al cargar fechas.';
+        })
+        .getAvailableSlots(SUBNIVEL);
+    }
+
+    function renderDatesFromSlots(slots) {
+      const map = {};
+      slots.forEach(s => {
+        const d = s.dateStr || 'unknown';
+        if (!map[d]) map[d] = [];
+        map[d].push(s);
+      });
+      const datesArr = Object.keys(map).map(k => ({ dateStr: k, count: map[k].length }));
+      datesArr.sort((a, b) => a.dateStr.localeCompare(b.dateStr));
+      
+      const list = document.getElementById('datesList');
+      list.innerHTML = '';
+      if (!datesArr || datesArr.length === 0) {
+        document.getElementById('datesMessage').innerText = 'No hay fechas disponibles (o ninguna con antelación mínima).';
+        return;
+      }
+      document.getElementById('datesMessage').innerText = '';
+      datesArr.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<div class="row">
+              <div>
+                <div style="font-weight:700; font-size:1.15em; margin-bottom:6px; color:#12243a;">${formatDateDisplay(d.dateStr)}</div>
+                <div class="muted">${d.count} horarios disponibles</div>
+              </div>
+              <div><button class="btn secondary" onclick="loadSlots('${d.dateStr}')">Ver horas</button></div>
+            </div>`;
+        list.appendChild(div);
+      });
+    }
+
+    function loadSlots(dateStr) {
+      CURRENT_DATE = dateStr;
+      showSlotsUI();
+      document.getElementById('slotsMessage').innerText = 'Cargando horas para ' + dateStr + '...';
+      document.getElementById('slotsList').innerHTML = '';
+      showSpinner('Cargando horas...');
+
+      if (CLIENT_CACHE.subnivel === SUBNIVEL && CLIENT_CACHE.slots) {
+        hideSpinner();
+        const slotsForDay = CLIENT_CACHE.slots.filter(s => s.dateStr === dateStr) || [];
+        renderSlots(slotsForDay, dateStr);
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          hideSpinner();
+          if (!resp || !resp.ok) {
+            document.getElementById('slotsMessage').innerText = 'Error: ' + (resp && resp.error ? resp.error : 'No se pudieron obtener horas');
+            return;
+          }
+          renderSlots(resp.slots || [], dateStr);
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          document.getElementById('slotsMessage').innerText = 'Error de conexión al cargar horarios.';
+        })
+        .getSlotsForDate(SUBNIVEL, dateStr);
+    }
+
+    function formatIsoToLocalTime(iso) {
+      if (!iso) return '';
+      try {
+        const dt = new Date(iso);
+        return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: USER_TZ }).format(dt);
+      } catch (e) { return iso; }
+    }
+
+    function formatIsoToLocalDate(iso) {
+      if (!iso) return '';
+      try {
+        const dt = new Date(iso);
+        return new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: USER_TZ }).format(dt);
+      } catch (e) { return iso; }
+    }
+
+    function formatSlotTime(timeLabel, timeStr, isoBogota) {
+      if (isoBogota) return formatIsoToLocalTime(isoBogota);
+      if (timeLabel && String(timeLabel).trim() !== '') return formatTime12(timeLabel);
+      if (timeStr && String(timeStr).trim() !== '') return formatTime12(timeStr);
+      return '';
+    }
+
+    function renderSlots(slots, dateStr) {
+      const list = document.getElementById('slotsList');
+      list.innerHTML = '';
+      
+      if (!slots || slots.length === 0) {
+        document.getElementById('slotsMessage').innerHTML = `<div style="padding: 24px; text-align: center; color: #6b7684; background: #f8fbff; border-radius: 12px; border: 1px dashed #c0d3e6; font-size:1.1rem;">No hay horas disponibles para ${dateStr}</div>`;
+        return;
+      }
+      
+      document.getElementById('slotsMessage').innerHTML = `<div style="margin-bottom: 20px; font-size: 1.2em; font-weight: 700; color: #12243a;">Horarios para el ${formatNiceDate(dateStr)}</div>`;
+
+      slots.forEach(s => {
+        const displayTimeLocal = s.isoBogota ? (USER_TZ === PROGRAMMER_TZ ? formatSlotTime(s.timeLabel, s.timeStr, null) : formatIsoToLocalTime(s.isoBogota)) : formatSlotTime(s.timeLabel, s.timeStr, null);
+        const programmerTime = s.timeLabel && String(s.timeLabel).trim() ? s.timeLabel : s.timeStr;
+        const programmerNote = (USER_TZ === PROGRAMMER_TZ) ? '' : `<div class="slot-time-note">Hora programador: ${formatTime12(programmerTime)} (${PROGRAMMER_TZ})</div>`;
+        
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <div class="slot-card">
+            <div>
+              <div class="slot-time-main">${displayTimeLocal}</div>
+              ${programmerNote}
+            </div>
+            <div>
+              <button class="btn-reserve" onclick="handleSlotSelection('${s.slotId}')">Reservar</button>
+            </div>
+          </div>`;
+          
+        div.setAttribute('data-slotid', s.slotId);
+        list.appendChild(div);
+      });
+
+      CLIENT_CACHE.subnivel = SUBNIVEL;
+      updateDesiredButtons();
+    }
+
+    function formatTime12(timeStr) {
+      if (!timeStr) return '';
+      const t = String(timeStr).trim();
+      if (/am|pm/i.test(t)) return t.replace(/\s+/g, ' ').toUpperCase();
+      const m = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if (!m) return t;
+      let hh = Number(m[1]), mm = m[2];
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      let hh12 = hh % 12;
+      if (hh12 === 0) hh12 = 12;
+      return ('0' + hh12).slice(-2) + ':' + mm + ' ' + ampm;
+    }
+
+    function formatNiceDate(isoOrDisplay) {
+      if (!isoOrDisplay) return isoOrDisplay || '';
+      const m = isoOrDisplay.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+        const dt = new Date(y, mo, d);
+        try {
+          return new Intl.DateTimeFormat('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).format(dt);
+        } catch (e) {
+          return ('0' + d).slice(-2) + '/' + ('0' + (mo + 1)).slice(-2) + '/' + y;
+        }
+      }
+      return isoOrDisplay;
+    }
+
+    // ==========================================
+    // DESIRED MODAL
+    // ==========================================
+    function openDesiredModal(origin) {
+      const modalRoot = document.getElementById('modalRoot');
+      modalRoot.style.display = 'block';
+      const weekdaysOptions = ['06:00 AM', '08:00 AM', '10:00 AM', '12:00 PM', '01:00 PM', '03:00 PM', '05:00 PM', '07:00 PM'];
+      const saturdayOptions = ['07:00 AM', '09:00 AM', '11:00 AM', '01:00 PM', '03:00 PM', '05:00 PM'];
+
+      let wdHtml = weekdaysOptions.map(o => {
+        let id = 'wd_' + o.replace(/[:\s]/g, '');
+        return `<div class="option-row"><input type="checkbox" class="wd-chk" value="${o}" id="${id}"><label for="${id}">${o}</label></div>`;
+      }).join('');
+
+      let satHtml = saturdayOptions.map(o => {
+        let id = 'sat_' + o.replace(/[:\s]/g, '');
+        return `<div class="option-row"><input type="checkbox" class="sat-chk" value="${o}" id="${id}"><label for="${id}">${o}</label></div>`;
+      }).join('');
+
+      modalRoot.innerHTML = `
+        <div class="modal-back" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom: 8px;">Información de horarios</h3>
+            <div id="desiredMsg" class="muted" style="margin-bottom: 20px; font-size: 1.05rem;">
+              Ayúdanos a mejorar nuestra planeación indicando a qué horas podrías tomar tus clases.
+            </div>
+            
+            <div style="background:#f4f7fb; border:1px solid #e1e5eb; border-radius:12px; padding:16px; margin-bottom:24px;">
+              <div style="font-size:0.95rem; color:#12243a; font-weight:700;">⚠️ Nota importante:</div>
+              <div style="font-size:0.9rem; color:#6b7684; margin-top:6px; line-height: 1.4;">
+                Esta información nos sirve para organizar los horarios de la semana, <strong>pero no generará una reserva automática de tu clase</strong>.
+              </div>
+            </div>
+
+            <form id="desiredForm" class="desired-form" autocomplete="off" novalidate style="margin-top:0;">
+              
+              <div class="form-row">
+                <label style="font-weight:700; font-size:0.95em; color:var(--text-main);">HORARIO LUNES A VIERNES</label>
+                <div>
+                  <button type="button" id="openWeekdaysBtn" class="chip-btn">Elegir horarios L-V</button>
+                  <span id="weekdaysMini" class="mini-summary" style="display:none;"></span>
+                  <div id="weekdaysPanel" class="options-panel" style="display:none;">
+                    <div class="small-note">Selecciona una o más opciones</div>
+                    <div class="option-grid">
+                      ${wdHtml}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row" style="margin-top:12px;">
+                <label style="font-weight:700; font-size:0.95em; color:var(--text-main);">HORARIO SÁBADO <span class="muted" style="font-weight:400;">(opcional)</span></label>
+                <div>
+                  <button type="button" id="toggleSatBtn" class="chip-btn">Agregar horario sábado</button>
+                  <span id="satMini" class="mini-summary" style="display:none;"></span>
+                  <div id="satPanel" class="options-panel" style="display:none;">
+                    <div class="small-note">Selecciona una o más opciones para sábado</div>
+                    <div class="option-grid">
+                      ${satHtml}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row" style="margin-top:16px;">
+                <label for="obsDesired" style="font-weight:700; font-size:0.95em; color:var(--text-main);">Observaciones adicionales (opcional)</label>
+                <textarea id="obsDesired" rows="3" placeholder="Añade detalles de tus preferencias..."></textarea>
+              </div>
+
+              <input type="hidden" id="desiredOrigin" value="${origin || ''}">
+              <input type="hidden" id="desiredDate" value="${CURRENT_DATE || ''}">
+
+              <div class="desired-actions" style="margin-top:24px;">
+                <button type="button" class="btn resv-cancel" onclick="closeModal()" style="flex:1; padding: 16px;">Cancelar</button>
+                <button id="desiredSubmit" type="submit" class="btn" style="flex:1.5; padding: 16px;">Enviar información</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      try {
+        const prev = loadDesiredState(origin);
+        const obsEl = document.getElementById('obsDesired');
+        if (obsEl && prev.observaciones) obsEl.value = prev.observaciones;
+
+        document.querySelectorAll('.wd-chk').forEach(c => c.checked = (prev.weekdays || []).indexOf(c.value) !== -1);
+        document.querySelectorAll('.sat-chk').forEach(c => c.checked = (prev.saturday || []).indexOf(c.value) !== -1);
+
+        document.getElementById('weekdaysPanel').addEventListener('change', e => { if(e.target.classList.contains('wd-chk')) onSelectionChange(); });
+        document.getElementById('satPanel').addEventListener('change', e => { if(e.target.classList.contains('sat-chk')) onSelectionChange(); });
+
+        const openWeekdaysBtn = document.getElementById('openWeekdaysBtn'), weekdaysPanel = document.getElementById('weekdaysPanel');
+        const toggleSatBtn = document.getElementById('toggleSatBtn'), satPanel = document.getElementById('satPanel');
+        const wdMini = document.getElementById('weekdaysMini'), satMini = document.getElementById('satMini');
+
+        const toggle = el => el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+        openWeekdaysBtn.addEventListener('click', () => { toggle(weekdaysPanel); openWeekdaysBtn.innerText = (weekdaysPanel.style.display === 'block') ? 'Cerrar horarios L-V' : 'Elegir horarios L-V'; });
+        toggleSatBtn.addEventListener('click', () => { toggle(satPanel); toggleSatBtn.innerText = (satPanel.style.display === 'block') ? 'Ocultar horario sábado' : 'Agregar horario sábado'; });
+
+        function refreshMini() {
+          const getVals = sel => Array.from(document.querySelectorAll(sel)).filter(c => c.checked).map(c => c.value);
+          const w = getVals('.wd-chk'), s = getVals('.sat-chk');
+          wdMini.innerText = w.length ? ('L-V: ' + formatSummary(w, 3)) : '';
+          satMini.innerText = s.length ? ('Sáb: ' + formatSummary(s, 3)) : '';
+          wdMini.style.display = w.length ? 'inline-block' : 'none';
+          satMini.style.display = s.length ? 'inline-block' : 'none';
+        }
+
+        function onSelectionChange() {
+          refreshMini();
+          saveDesiredState(origin, {
+            observaciones: document.getElementById('obsDesired').value.trim(),
+            weekdays: Array.from(document.querySelectorAll('.wd-chk')).filter(c=>c.checked).map(c=>c.value),
+            saturday: Array.from(document.querySelectorAll('.sat-chk')).filter(c=>c.checked).map(c=>c.value)
+          });
+        }
+        if (obsEl) obsEl.addEventListener('change', onSelectionChange);
+        refreshMini(); updateDesiredButtons();
+      } catch (e) {}
+
+      document.getElementById('desiredForm').addEventListener('submit', function(ev) {
+        ev.preventDefault();
+        const submitBtn = document.getElementById('desiredSubmit');
+        const msg = document.getElementById('desiredMsg');
+        submitBtn.disabled = true;
+        showSpinner('Enviando información...');
+
+        const getChecked = sel => Array.from(document.querySelectorAll(sel)).filter(c=>c.checked).map(c=>c.value);
+        const weekdays = getChecked('.wd-chk');
+        const saturday = getChecked('.sat-chk');
+
+        if (weekdays.length === 0 && saturday.length === 0) {
+          alert('Selecciona al menos una hora de lunes a viernes o una hora de sábado.');
+          submitBtn.disabled = false;
+          hideSpinner();
+          return;
+        }
+
+        const payload = {
+          documento: SESSION_DATA.documento,
+          nombre: SESSION_DATA.nombreCompleto,
+          weekdays: weekdays,
+          saturday: saturday,
+          observaciones: document.getElementById('obsDesired').value.trim(),
+          subnivel: SUBNIVEL || '',
+          clase: CLASS_IDX || '',
+          origin: document.getElementById('desiredOrigin').value || origin,
+          attemptedDate: document.getElementById('desiredDate').value || CURRENT_DATE || '',
+          userTz: USER_TZ || ''
+        };
+
+        google.script.run
+          .withSuccessHandler(res => {
+            hideSpinner();
+            if (res && res.ok) {
+              clearDesiredState(origin);
+              
+              const modalInner = document.querySelector('#modalRoot .modal');
+              if(modalInner) {
+                modalInner.innerHTML = `
+                  <div style="text-align:center;">
+                    <div style="width:72px; height:72px; border-radius:50%; background:#e6f4ea; color:#1e8e3e; display:flex; align-items:center; justify-content:center; margin:0 auto 20px auto; font-size:36px; font-weight:bold;">✓</div>
+                    <h3 style="margin-bottom:12px; font-size:1.6rem;">¡Información recibida!</h3>
+                    
+                    <div style="background:#fffaf0; border-left: 5px solid #f29900; padding:20px; border-radius:12px; text-align:left; margin-bottom:24px;">
+                      <div style="font-weight:800; color:#b07000; margin-bottom:8px; font-size:1.05rem;">Aclaración importante</div>
+                      <div style="color:#12243a; font-size:1rem; line-height:1.5;">
+                        Esta información será utilizada exclusivamente para la <strong>planeación semanal de clases</strong>. <br><br>
+                        ⚠️ <strong>Esta solicitud NO genera el agendamiento de la clase.</strong> Sin embargo, nos ayuda a mejorar nuestra planeación para facilitar el acceso a nuestras clases. 
+                      </div>
+                    </div>
+                    
+                    <button class="btn" style="width:100%; padding:16px; font-size:1.1rem;" onclick="closeModal()">Entendido</button>
+                  </div>
+                `;
+              } else {
+                 closeModal();
+              }
+            } else {
+              msg.innerHTML = '<span style="color:#d93025; font-weight:600;">Error al guardar: ' + (res.error || 'Desconocido') + '</span>';
+              submitBtn.disabled = false;
+            }
+          })
+          .withFailureHandler(err => {
+            hideSpinner();
+            msg.innerHTML = '<span style="color:#d93025; font-weight:600;">Error de conexión.</span>';
+            submitBtn.disabled = false;
+          })
+          .saveDesiredRequest(payload);
+      });
+    }
+
+    function closeModal() {
+      const modalRoot = document.getElementById('modalRoot');
+      modalRoot.style.display = 'none';
+      modalRoot.innerHTML = '';
+    }
+
+    function handleSlotSelection(slotId) {
+      const slot = (CLIENT_CACHE.slots || []).find(s => s.slotId === slotId);
+      if (!slot) return;
+      if (slot.remaining > 0) {
+        openBookingForm(slotId);
+      } else {
+        const sameDayAvailable = (CLIENT_CACHE.slots || []).filter(s => s.dateStr === slot.dateStr && s.remaining > 0);
+        const modalRoot = document.getElementById('modalRoot');
+        modalRoot.style.display = 'block';
+        
+        const displayTimeLocal = slot.isoBogota ? formatIsoToLocalTime(slot.isoBogota) : formatSlotTime(slot.timeLabel, slot.timeStr, null);
+        const niceDate = formatNiceDate(slot.dateStr);
+
+        let contentHtml = `
+          <div style="text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: #fff8e6; color: #f29900; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 32px; font-weight: bold;">!</div>
+            <h3 style="margin: 0 0 12px 0; color: #12243a;">Horario agotado</h3>
+            <div class="muted" style="margin-bottom: 24px; font-size: 1.05rem;">Lo sentimos, ya no quedan espacios para las <strong>${displayTimeLocal}</strong>.</div>`;
+
+        if (sameDayAvailable.length > 0) {
+          contentHtml += `
+            <div style="background: #f8f9fa; border: 1px solid #e1e5eb; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+              <div style="font-size: 1rem; font-weight: 700; color: #12243a; margin-bottom: 16px;">Aún hay disponibilidad el ${niceDate} en:</div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">`;
+          sameDayAvailable.forEach(alt => {
+             const altTime = alt.isoBogota ? formatIsoToLocalTime(alt.isoBogota) : formatSlotTime(alt.timeLabel, alt.timeStr, null);
+             contentHtml += `
+                <button class="btn secondary" style="padding:12px 8px; font-size:1rem" onclick="closeModal(); openBookingForm('${alt.slotId}')">${altTime}</button>`;
+          });
+          contentHtml += `</div></div>`;
+        } else {
+          contentHtml += `
+            <div style="background: #fce8e6; border-left: 5px solid #d93025; padding: 16px; text-align: left; border-radius: 12px; margin-bottom: 24px;">
+              <div style="font-size: 1rem; color: #c5221f; font-weight: 600;">No quedan más horarios disponibles para esta fecha.</div>
+            </div>`;
+        }
+        contentHtml += `<button class="btn resv-cancel" style="width: 100%; padding: 16px; font-size: 1.05rem;" onclick="closeNoAvailabilityModal('${slot.slotId}')">Cerrar y buscar otro horario</button></div>`;
+        
+        modalRoot.innerHTML = `<div class="modal-back" onclick="closeNoAvailabilityModal('${slot.slotId}')"><div class="modal" onclick="event.stopPropagation()">${contentHtml}</div></div>`;
+      }
+    }
+
+    function closeNoAvailabilityModal(slotId) {
+      closeModal();
+      const slot = (CLIENT_CACHE.slots || []).find(s => s.slotId === slotId);
+      if(!slot) return;
+      google.script.run.logFailedBookingToBigQuery({
+        subnivel: SUBNIVEL, clase: CLASS_IDX, fecha: slot.dateStr, hora: slot.timeStr,
+        dispositivo_id: getOrCreateDeviceId(), documento: SESSION_DATA.documento
+      });
+    }
+
+    // ==========================================
+    // BOOKING MODAL
+    // ==========================================
+    function openBookingForm(slotId) {
+      const slot = (CLIENT_CACHE.slots || []).find(s => s.slotId === slotId);
+      if (!slot) return;
+
+      const modalRoot = document.getElementById('modalRoot');
+      modalRoot.style.display = 'block';
+      const isoBogota = slot.isoBogota || '';
+      const displayDateLocal = isoBogota ? formatIsoToLocalDate(isoBogota) : formatNiceDate(slot.dateStr);
+      const displayTimeLocal = isoBogota ? formatIsoToLocalTime(isoBogota) : formatSlotTime(slot.timeLabel, slot.timeStr, null);
+
+      modalRoot.innerHTML = `
+        <div class="modal-back" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <h3>Completar reserva</h3>
+            <div id="modalMsg" class="muted" style="margin-bottom: 20px;">Verifica la información y añade tu correo para confirmar.</div>
+            
+            <div style="background:#f4f7fb; border:1px solid #e1e5eb; border-radius:12px; padding:20px; margin-bottom:20px; display:flex; justify-content:space-between;">
+              <div>
+                <div class="muted" style="font-size:0.8em; font-weight:700; text-transform:uppercase;">Fecha</div>
+                <div style="font-size:1.1rem; font-weight:700; margin-top:4px; color:#12243a;">${displayDateLocal}</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="muted" style="font-size:0.8em; font-weight:700; text-transform:uppercase;">Hora</div>
+                <div style="font-size:1.1rem; font-weight:700; margin-top:4px; color:#12243a;">${displayTimeLocal} <span style="font-size:0.8em; font-weight:normal; color:#6b7684;">(${USER_TZ})</span></div>
+              </div>
+            </div>
+
+            <form id="bookingForm" class="resv-form" autocomplete="off" novalidate style="margin-top:0;">
+              
+              <div class="form-row" style="margin-bottom:20px;">
+                <label for="email" style="font-weight:700; font-size:1rem; color:var(--text-main);">Correo electrónico <span style="color:#d93025">*</span></label>
+                <input id="email" name="email" type="email" required placeholder="tu@correo.com" />
+              </div>
+
+              <input type="hidden" id="slotId" value="${slotId}">
+              <input type="hidden" id="claseHidden" value="${CLASS_IDX}">
+              <input type="hidden" id="slotIso" value="${isoBogota}">
+              <input type="hidden" id="userTz" value="${USER_TZ}">
+
+              <div class="resv-actions" style="margin-top:0;">
+                <button type="button" class="btn resv-cancel" onclick="closeModal()" style="flex: 1;">Cancelar</button>
+                <button id="confirmBtn" type="submit" class="btn" style="flex: 1.5;">Confirmar reserva</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('bookingForm').addEventListener('submit', function(ev) {
+        ev.preventDefault();
+        const confirmBtn = document.getElementById('confirmBtn');
+        const modalMsg = document.getElementById('modalMsg');
+        
+        confirmBtn.disabled = true; confirmBtn.innerText = 'Procesando...';
+        showSpinner('Procesando reserva...');
+
+        const data = {
+          subnivel: SUBNIVEL,
+          slotId: document.getElementById('slotId').value,
+          email: document.getElementById('email').value.trim(),
+          clase: document.getElementById('claseHidden').value || '',
+          slotIso: document.getElementById('slotIso').value || '',
+          userTz: document.getElementById('userTz').value || USER_TZ,
+          dispositivo_id: getOrCreateDeviceId(),
+          documento: SESSION_DATA.documento,
+          name: SESSION_DATA.nombreCompleto
+        };
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            hideSpinner();
+            if (res && res.ok) {
+              let localDateStr = '', localTimeStr = '';
+              if (data.slotIso && data.userTz) {
+                try {
+                  const dt = new Date(data.slotIso);
+                  localDateStr = new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: data.userTz }).format(dt);
+                  localTimeStr = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: data.userTz }).format(dt);
+                } catch (e) {}
+              }
+              showBookingConfirmation(res.bookingId || '', localDateStr, localTimeStr, data.userTz);
+              
+              CLIENT_CACHE.subnivel = null;
+              setTimeout(() => {
+                google.script.run.withSuccessHandler(resp => {
+                  if (resp && resp.ok) { CLIENT_CACHE.subnivel = SUBNIVEL; CLIENT_CACHE.slots = resp.slots || []; }
+                }).getAvailableSlots(SUBNIVEL);
+              }, 700);
+            } else if (res && res.error && /último cupo/i.test(String(res.error))) {
+              const slotToUpdate = (CLIENT_CACHE.slots || []).find(s => s.slotId === data.slotId);
+              if (slotToUpdate) slotToUpdate.remaining = 0;
+              closeModal();
+              handleSlotSelection(data.slotId);
+            } else if (res && res.booking) {
+              document.getElementById('bookingForm').style.display = 'none';
+              modalMsg.style.display = 'none';
+              
+              const b = res.booking;
+              const prettyDate = b.isoBogota ? formatIsoToLocalDate(b.isoBogota) : formatNiceDate(b.fecha_clase);
+              const prettyTime = b.isoBogota ? formatIsoToLocalTime(b.isoBogota) : formatTime12(b.hora_clase);
+              
+              const dupDiv = document.createElement('div');
+              dupDiv.innerHTML = `
+                <div style="text-align:center;">
+                  <div style="width:64px;height:64px;border-radius:50%;background:#fff8e6;color:#f29900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto;font-size:32px;font-weight:bold;">!</div>
+                  <h3 style="margin-bottom:12px; color:#12243a;">Ya tienes una reserva activa</h3>
+                  <p class="muted" style="font-size:1.05rem;">Para programar esta nueva clase, primero debes cancelar tu reserva existente.</p>
+                  
+                  <div style="background:#f4f7fb; border:1px solid #e1e5eb; border-radius:16px; padding:20px; text-align:left; margin-bottom:24px;">
+                    <div style="font-size:0.85em; font-weight:700; text-transform:uppercase; color:#6b7684">Clase existente</div>
+                    <div style="font-weight:700; font-size:1.1rem; margin-bottom:12px; color:#12243a;">${escapeHtml(b.clase||'N/A')} (${escapeHtml(b.subnivel)})</div>
+                    <div style="font-size:0.85em; font-weight:700; text-transform:uppercase; color:#6b7684; border-top:1px dashed #c0d3e6; padding-top:12px;">Fecha y hora</div>
+                    <div style="font-weight:700; font-size:1.1rem; color:#12243a; margin-top:4px;">${prettyDate} — ${prettyTime}</div>
+                  </div>
+                  
+                  <button class="btn" style="width:100%; background:#d93025; margin-bottom:12px; padding:16px; font-size:1.05rem;" onclick="closeModal(); openCancelModal({bookingId:'${b.bookingId}', token:'${b.cancelToken||''}'})">Cancelar reserva existente</button>
+                  <button class="btn resv-cancel" style="width:100%; padding:16px; font-size:1.05rem;" onclick="closeModal()">Cerrar</button>
+                </div>
+              `;
+              document.getElementById('bookingForm').parentNode.appendChild(dupDiv);
+            } else {
+              modalMsg.innerHTML = '<span style="color:#d93025; font-weight:600;">Error: ' + escapeHtml(res && res.error ? res.error : 'no disponible') + '</span>';
+              confirmBtn.disabled = false; confirmBtn.innerText = 'Confirmar reserva';
+            }
+          })
+          .withFailureHandler(function(err) {
+            hideSpinner();
+            modalMsg.innerHTML = '<span style="color:#d93025; font-weight:600;">Error de conexión. Intenta de nuevo.</span>';
+            confirmBtn.disabled = false; confirmBtn.innerText = 'Confirmar reserva';
+          })
+          .bookSlot(data);
+      });
+    }
+
+    function showBookingConfirmation(bookingId, localDateStr, localTimeStr, userTz) {
+      const root = document.getElementById('modalRoot');
+      root.style.display = 'block';
+      const dateText = localDateStr || 'Fecha no disponible';
+      const timeText = localTimeStr ? `${localTimeStr} <span style="font-size:0.85em; font-weight:normal; color:#6b7684;">(${userTz})</span>` : 'Hora no disponible';
+      
+      root.innerHTML = `
+        <div class="modal-back" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()" style="text-align:center; max-width: 550px;">
+            <div style="width:72px; height:72px; border-radius:50%; background:#e6f4ea; color:#1e8e3e; display:flex; align-items:center; justify-content:center; margin:0 auto 20px auto; font-size:36px; font-weight:bold;">✓</div>
+            <h3 style="font-size: 1.8rem;">¡Reserva confirmada!</h3>
+            <div class="muted" style="margin-bottom:24px; font-size: 1.1rem;">Tu clase ha sido agendada exitosamente.</div>
+            
+            <div style="background:#f4f7fb; border:1px solid #e1e5eb; border-radius:16px; padding:20px; text-align:left; margin-bottom:24px; display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <div class="muted" style="font-size:0.85em; font-weight:700; text-transform:uppercase;">Fecha de la clase</div>
+                <div style="font-weight:700; font-size: 1.15rem; color: #12243a;">${dateText}</div>
+              </div>
+              <div style="border-top: 1px dashed #c0d3e6; padding-top: 12px;">
+                <div class="muted" style="font-size:0.85em; font-weight:700; text-transform:uppercase;">Hora de la clase</div>
+                <div style="font-weight:700; font-size: 1.15rem; color: #12243a;">${timeText}</div>
+              </div>
+            </div>
+
+            <div class="info-alert">
+              <div class="info-alert-title">¿Cómo conectarte a la clase?</div>
+              <p class="info-alert-body">Los datos de conexión llegarán aproximadamente <strong>una hora antes</strong> de tu clase al correo electrónico registrado.</p>
+              
+              <div class="info-alert-highlight">
+                <div style="font-size: 24px; line-height: 1;">💡</div>
+                <div style="font-size: 0.95rem; color: #12243a; line-height: 1.4;">
+                  También podrás encontrar el enlace de conexión en la <strong>página inicial de tu cuenta de Smart Flex</strong>, haciendo clic en el botón <strong style="color:var(--primary);">"Enlace de clase"</strong>.
+                </div>
+              </div>
+            </div>
+
+            <button class="btn" style="width:100%; padding:18px; font-size:1.1rem;" onclick="closeModal()">Entendido</button>
+          </div>
+        </div>`;
+    }
+
+    // ==========================================
+    // CANCEL MODAL
+    // ==========================================
+    function openCancelModal(prefill) {
+      prefill = prefill || {};
+      const root = document.getElementById('modalRoot');
+      root.style.display = 'block';
+      
+      root.innerHTML = `
+        <div class="modal-back" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <h3>Cancelar reserva</h3>
+            <div id="cancelMsg" class="muted" style="margin-bottom:20px; font-size: 1.05rem;">Buscando tus reservas activas...</div>
+            <div id="cancelResult"></div>
+            <div class="resv-actions" style="margin-top:24px;">
+               <button type="button" class="btn resv-cancel" style="width:100%; padding: 16px; font-size:1.05rem;" onclick="closeModal()">Cerrar ventana</button>
+            </div>
+          </div>
+        </div>`;
+
+      const out = document.getElementById('cancelResult');
+      const msg = document.getElementById('cancelMsg');
+
+      if (prefill.bookingId && prefill.token) {
+        showSpinner('Cancelando reserva...');
+        google.script.run
+          .withSuccessHandler(res => {
+            hideSpinner();
+            if (res && res.ok && res.booking) {
+              showCancellationSuccess(res.booking);
+            } else {
+              out.innerHTML = `<div style="background:#fce8e6; color:#d93025; font-weight:600; padding:16px; border-radius:12px;">No fue posible cancelar: ${escapeHtml(res.error || '')}</div>`;
+            }
+          })
+          .withFailureHandler(err => { hideSpinner(); out.innerHTML = '<div style="color:#d93025; font-weight:600;">Error de conexión.</div>'; })
+          .handleCancelRequest({ bookingId: prefill.bookingId, token: prefill.token, source: 'web_link' });
+        return;
+      }
+
+      showSpinner('Buscando reserva...');
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          hideSpinner();
+          msg.style.display = 'none';
+          if (!resp || !resp.ok) {
+            out.innerHTML = `<div style="color:#d93025; font-weight:600; padding:16px; background:#fce8e6; border-radius:12px;">Error al buscar reserva: ${escapeHtml(resp.error||'')}</div>`;
+            return;
+          }
+          if (!resp.booking) {
+            out.innerHTML = '<div class="no-available-box" style="text-align:center; font-size:1.1rem; color:#12243a; font-weight:500;">No tienes ninguna reserva activa.</div>';
+            return;
+          }
+          renderFoundBooking(resp.booking);
+        })
+        .withFailureHandler(function(err) {
+          hideSpinner();
+          out.innerHTML = '<div class="muted" style="font-weight:600; color:#d93025;">Error de conexión al buscar reserva.</div>';
+        })
+        .getStudentBooking('', SESSION_DATA.documento, CLASS_IDX);
+    }
+
+    function renderFoundBooking(b) {
+      const out = document.getElementById('cancelResult');
+      const prettyDate = b.isoBogota ? formatIsoToLocalDate(b.isoBogota) : b.fecha_clase || '';
+      const prettyTime = b.isoBogota ? formatIsoToLocalTime(b.isoBogota) : b.hora_clase || '';
+      
+      out.innerHTML = `
+        <div style="background:#fffaf0; border:1px solid #fce3b3; border-radius:16px; padding:20px; margin-bottom:24px;">
+          <div style="margin-bottom:16px;">
+            <div class="muted" style="font-size:0.85em; font-weight:700; text-transform:uppercase; color:#b07000;">Clase y Subnivel</div>
+            <div style="font-weight:700; font-size:1.1rem; color:#12243a; margin-top:4px;">${escapeHtml(b.clase||'')} — ${escapeHtml(b.subnivel||'')}</div>
+          </div>
+          <div style="border-top:1px dashed #fce3b3; padding-top:16px;">
+            <div class="muted" style="font-size:0.85em; font-weight:700; text-transform:uppercase; color:#b07000;">Fecha y Hora</div>
+            <div style="font-weight:700; font-size:1.1rem; color:#12243a; margin-top:4px;">${prettyDate} a las ${prettyTime}</div>
+          </div>
+        </div>
+        <div style="background:#fdf2f2; border:1px solid #f9cdcd; padding:16px; border-radius:12px; margin-bottom:24px;">
+          <div style="font-size:0.95em; color:#d93025; font-weight:600; line-height:1.4;">Confirma solo si estás seguro de cancelar esta clase. La acción no se puede deshacer.</div>
+        </div>
+        <button id="confirmCancelBtn" class="btn" style="width:100%; padding:16px; font-size:1.1rem; background:#d93025; border-color:#d93025;">Confirmar cancellation</button>
+      `;
+
+      document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+        showSpinner('Cancelando reserva...');
+        out.innerHTML = '<div class="muted" style="text-align:center; padding:16px; font-size:1.1rem;">Procesando cancelación...</div>';
+        google.script.run
+          .withSuccessHandler(res => {
+            hideSpinner();
+            if (res && res.ok && res.booking) {
+              showCancellationSuccess(res.booking);
+            } else {
+              out.innerHTML = `<div style="color:#d93025; font-weight:600; background:#fce8e6; padding:16px; border-radius:12px;">No fue posible cancelar: ${escapeHtml(res.error||'')}</div>`;
+            }
+          })
+          .withFailureHandler(err => { hideSpinner(); out.innerHTML = '<div style="color:#d93025; font-weight:600;">Error de conexión.</div>'; })
+          .handleCancelRequest({ bookingId: b.bookingId, token: b.cancelToken || '', source: 'web_form' });
+      });
+    }
+
+    function showCancellationSuccess(bk) {
+      const out = document.getElementById('cancelResult');
+      const prettyDate = bk.isoBogota ? formatIsoToLocalDate(bk.isoBogota) : bk.fecha_clase || '';
+      const prettyTime = bk.isoBogota ? formatIsoToLocalTime(bk.isoBogota) : bk.hora_clase || '';
+
+      out.innerHTML = `
+        <div style="text-align:center;">
+          <div style="width:72px; height:72px; border-radius:50%; background:#e6f4ea; color:#1e8e3e; display:flex; align-items:center; justify-content:center; margin:0 auto 20px auto; font-size:36px; font-weight:bold;">✓</div>
+          <h3 style="margin:0 0 12px 0; font-size:1.6rem;">Cancelación exitosa</h3>
+          <div class="muted" style="margin-bottom:24px; font-size:1.05rem;">Tu cupo ha sido liberado correctamente.</div>
+          <div style="background:#f4f7fb; border:1px solid #e1e5eb; border-radius:16px; padding:20px; text-align:center; margin-bottom:24px;">
+            <div style="font-weight:700; font-size:1.15rem; color:#12243a;">${prettyDate} — ${prettyTime}</div>
+            <div style="font-size:0.9em; color:#6b7684; margin-top:8px; font-weight:500;">ID de Reserva: ${escapeHtml(bk.bookingId)}</div>
+          </div>
+        </div>`;
+    }
+
+    // ==========================================
+    // VERIFY BOOKING MODAL
+    // ==========================================
+    function openVerifyModal() {
+      const root = document.getElementById('modalRoot');
+      root.style.display = 'block';
+      root.innerHTML = `
+        <div class="modal-back" onclick="closeModal()">
+          <div class="modal" onclick="event.stopPropagation()">
+            <h3>Verificar reserva</h3>
+            <div id="verifyMsg" class="muted" style="font-size:1.05rem; margin-bottom:16px;">Buscando tu última reserva activa...</div>
+            <div id="verifyResult" style="margin-top:20px;"></div>
+            <button type="button" class="btn resv-cancel" style="width:100%; margin-top:24px; padding:16px; font-size:1.05rem;" onclick="closeModal()">Cerrar</button>
+          </div>
+        </div>`;
+
+      const resDiv = document.getElementById('verifyResult');
+      const msgDiv = document.getElementById('verifyMsg');
+      
+      showSpinner('Buscando reserva...');
+      google.script.run
+        .withSuccessHandler(function(resp) {
+           hideSpinner();
+           msgDiv.style.display = 'none';
+           if(resp.ok && resp.booking) {
+             const b = resp.booking;
+             const prettyDate = b.isoBogota ? formatIsoToLocalDate(b.isoBogota) : b.fecha_clase;
+             const prettyTime = b.isoBogota ? formatIsoToLocalTime(b.isoBogota) : b.hora_clase;
+             
+             resDiv.innerHTML = `
+               <div style="background:#f0f7ff; border:1px solid #cce4ff; padding:24px; border-radius:16px;">
+                 <h4 style="margin:0 0 16px 0; color:#0b74de; font-size:1.2rem; font-weight:800;">Reserva encontrada</h4>
+                 <div style="font-size:1.05rem; margin-bottom:12px; color:#12243a;"><strong>Clase:</strong> ${escapeHtml(b.clase || 'N/A')} (${escapeHtml(b.subnivel)})</div>
+                 <div style="font-size:1.05rem; margin-bottom:12px; color:#12243a;"><strong>Fecha:</strong> ${prettyDate}</div>
+                 <div style="font-size:1.05rem; margin-bottom:16px; color:#12243a;"><strong>Hora:</strong> ${prettyTime}</div>
+                 <div style="margin-top:16px; font-size:0.9rem; font-weight:600; color:#6b7684; border-top:1px dashed #cce4ff; padding-top:16px;">ID: ${escapeHtml(b.bookingId)}</div>
+               </div>
+             `;
+           } else {
+             resDiv.innerHTML = `<div class="no-available-box" style="text-align:center; font-size:1.1rem; color:#12243a;">${resp.error || 'No se encontró ninguna reserva activa.'}</div>`;
+           }
+        })
+        .withFailureHandler(function(err) {
+           hideSpinner();
+           resDiv.innerHTML = '<div class="muted" style="color:#d93025; font-weight:600;">Error de conexión.</div>';
+        })
+        .verifyStudentBooking(SESSION_DATA.documento);
+    }
+  </script>
+</body>
+</html>
