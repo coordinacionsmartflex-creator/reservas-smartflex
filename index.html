@@ -622,7 +622,9 @@
       handleCancelRequest(content) { this._post("cancel", content); },
       bookSlot(data) { this._post("book", data); },
       saveDesiredRequest(payload) { this._post("saveDesiredRequest", { payload: payload }); },
-      logFailedBookingToBigQuery(data) { /* Opción en segundo plano */ }
+      logFailedBookingToBigQuery(data) { 
+        this._post("logFailedBookingToBigQuery", { payload: data });
+      }
     };
 
     // Redirigir google.script.run hacia nuestro adaptador
