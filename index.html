@@ -522,12 +522,41 @@
       document.getElementById('datesMessage').innerText='';
       dates.forEach(d=>{const div=document.createElement('div');div.className='card';div.innerHTML=`<div class="row"><div><div style="font-weight:700;font-size:1.15em;margin-bottom:6px">${formatDateDisplay(d.dateStr)}</div><div class="muted">${d.count} horarios disponibles</div></div><button class="btn secondary" onclick="loadSlots('${d.dateStr}')">Ver horas</button></div>`;list.appendChild(div);});
     }
+    
+    // ==========================================================
+    // CARGA DE HORAS CORREGIDA (Garantiza que la caché nunca quede vacía)
+    // ==========================================================
     function loadSlots(dateStr){
-      if(!canScheduleHere())return;CURRENT_DATE=dateStr;showSlotsUI();document.getElementById('slotsMessage').innerText='Cargando horas para '+dateStr+'...';document.getElementById('slotsList').innerHTML='';showSpinner('Cargando horas...');
-      if(CLIENT_CACHE.subnivel===SUBNIVEL&&CLIENT_CACHE.slots){hideSpinner();renderSlots(CLIENT_CACHE.slots.filter(s=>s.dateStr===dateStr),dateStr);return;}
-      google.script.run.withSuccessHandler(resp=>{hideSpinner();if(!resp||!resp.ok){document.getElementById('slotsMessage').innerText='Error: '+(resp&&resp.error?resp.error:'No se pudieron obtener horas');return;}renderSlots(resp.slots||[],dateStr);})
-        .withFailureHandler(()=>{hideSpinner();document.getElementById('slotsMessage').innerText='Error de conexión al cargar horarios.';}).getSlotsForDate(SUBNIVEL,dateStr);
+      if(!canScheduleHere()) return;
+      CURRENT_DATE = dateStr;
+      showSlotsUI();
+      document.getElementById('slotsMessage').innerText = 'Cargando horas para ' + dateStr + '...';
+      document.getElementById('slotsList').innerHTML = '';
+      showSpinner('Cargando horas...');
+
+      if(CLIENT_CACHE.subnivel === SUBNIVEL && CLIENT_CACHE.slots && CLIENT_CACHE.slots.length > 0){
+        hideSpinner();
+        renderSlots(CLIENT_CACHE.slots.filter(s => s.dateStr === dateStr), dateStr);
+        return;
+      }
+
+      google.script.run.withSuccessHandler(resp => {
+        hideSpinner();
+        if(!resp || !resp.ok){
+          document.getElementById('slotsMessage').innerText = 'Error: ' + (resp && resp.error ? resp.error : 'No se pudieron obtener horas');
+          return;
+        }
+        // Corrección: Asegurar que CLIENT_CACHE.slots guarde los datos
+        CLIENT_CACHE.subnivel = SUBNIVEL;
+        CLIENT_CACHE.slots = resp.slots || [];
+        renderSlots(CLIENT_CACHE.slots, dateStr);
+      })
+      .withFailureHandler(() => {
+        hideSpinner();
+        document.getElementById('slotsMessage').innerText = 'Error de conexión al cargar horarios.';
+      }).getSlotsForDate(SUBNIVEL, dateStr);
     }
+    
     function renderSlots(slots,dateStr){
       const list=document.getElementById('slotsList');list.innerHTML='';
       if(!slots||!slots.length){document.getElementById('slotsMessage').innerHTML=`<div class="no-available-box">No hay horas disponibles para ${escapeHtml(dateStr)}</div>`;return;}
@@ -568,35 +597,81 @@
     function closeModal(){const r=document.getElementById('modalRoot');r.style.display='none';r.innerHTML='';}
 
     // ==========================================================
-    // SELECCIÓN Y RESERVA
+    // SELECCIÓN DE SLOT CORREGIDA (Evita conflictos de eventos)
     // ==========================================================
     function handleSlotSelection(slotId){
-      if(!canScheduleHere())return;
-      const slot=(CLIENT_CACHE.slots||[]).find(s=>s.slotId===slotId);if(!slot)return;
-      if(slot.remaining>0){openBookingForm(slotId);return;}
-      const alternatives=(CLIENT_CACHE.slots||[]).filter(s=>s.dateStr===slot.dateStr&&s.remaining>0);const root=document.getElementById('modalRoot');root.style.display='block';const time=slot.isoBogota?formatIsoToLocalTime(slot.isoBogota):formatSlotTime(slot.timeLabel,slot.timeStr,null);let html=`<div style="text-align:center"><div style="font-size:46px;color:#f29900">!</div><h3>Horario agotado</h3><div class="muted" style="margin-bottom:24px">Ya no quedan espacios para las <strong>${time}</strong>.</div>`;
-      if(alternatives.length){html+=`<div style="background:#f8f9fa;padding:20px;border-radius:16px;margin-bottom:24px"><strong>Aún hay disponibilidad el ${formatNiceDate(slot.dateStr)} en:</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-top:16px">`;alternatives.forEach(a=>{const t=a.isoBogota?formatIsoToLocalTime(a.isoBogota):formatSlotTime(a.timeLabel,a.timeStr,null);html+=`<button class="btn secondary" onclick="closeModal();openBookingForm('${a.slotId}')">${t}</button>`;});html+='</div></div>';}
-      else html+='<div style="background:#fce8e6;padding:16px;border-radius:12px;margin-bottom:24px">No quedan más horarios disponibles para esta fecha.</div>';
-      html+=`<button class="btn resv-cancel" style="width:100%" onclick="closeNoAvailabilityModal('${slot.slotId}')">Cerrar y buscar otro horario</button></div>`;root.innerHTML=`<div class="modal-back" onclick="closeNoAvailabilityModal('${slot.slotId}')"><div class="modal" onclick="event.stopPropagation()">${html}</div></div>`;
+      if(!canScheduleHere()) return;
+      const slot = (CLIENT_CACHE.slots || []).find(s => s.slotId === slotId);
+      if(!slot){
+        console.warn('Slot no encontrado en caché:', slotId);
+        return;
+      }
+
+      if(slot.remaining > 0){
+        openBookingForm(slotId);
+        return;
+      }
+
+      const alternatives = (CLIENT_CACHE.slots || []).filter(s => s.dateStr === slot.dateStr && s.remaining > 0);
+      const root = document.getElementById('modalRoot');
+      const time = slot.isoBogota ? formatIsoToLocalTime(slot.isoBogota) : formatSlotTime(slot.timeLabel, slot.timeStr, null);
+      
+      let html = `
+        <div style="text-align:center">
+          <div style="font-size:46px;color:#f29900">!</div>
+          <h3>Horario agotado</h3>
+          <div class="muted" style="margin-bottom:24px">Ya no quedan espacios para las <strong>${time}</strong>.</div>`;
+
+      if(alternatives.length){
+        html += `
+          <div style="background:#f8f9fa;padding:20px;border-radius:16px;margin-bottom:24px">
+            <strong>Aún hay disponibilidad el ${formatNiceDate(slot.dateStr)} en:</strong>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-top:16px">`;
+        
+        alternatives.forEach(a => {
+          const t = a.isoBogota ? formatIsoToLocalTime(a.isoBogota) : formatSlotTime(a.timeLabel, a.timeStr, null);
+          // Corrección: event.stopPropagation() y transición limpia a openBookingForm
+          html += `<button type="button" class="btn secondary" onclick="event.stopPropagation();openBookingForm('${a.slotId}')">${t}</button>`;
+        });
+        html += '</div></div>';
+      } else {
+        html += '<div style="background:#fce8e6;padding:16px;border-radius:12px;margin-bottom:24px">No quedan más horarios disponibles para esta fecha.</div>';
+      }
+
+      html += `<button type="button" class="btn resv-cancel" style="width:100%" onclick="closeNoAvailabilityModal('${slot.slotId}')">Cerrar y buscar otro horario</button></div>`;
+      
+      root.innerHTML = `<div class="modal-back" onclick="closeNoAvailabilityModal('${slot.slotId}')"><div class="modal" onclick="event.stopPropagation()">${html}</div></div>`;
+      root.style.display = 'block';
     }
+    
     function closeNoAvailabilityModal(slotId){closeModal();const slot=(CLIENT_CACHE.slots||[]).find(s=>s.slotId===slotId);if(!slot)return;google.script.run.logFailedBookingToBigQuery({subnivel:SUBNIVEL,clase:CLASS_IDX,fecha:slot.dateStr,hora:slot.timeStr,dispositivo_id:getOrCreateDeviceId(),documento:SESSION_DATA.documento,entryMode:ENTRY_MODE});}
 
+    // ==========================================================
+    // FORMULARIO DE RESERVA CORREGIDO (Protegido contra SecurityError)
+    // ==========================================================
     function openBookingForm(slotId) {
       if (!canScheduleHere()) {
         alert('El agendamiento no está habilitado en este acceso.');
         return;
       }
       const slot = (CLIENT_CACHE.slots || []).find(s => s.slotId === slotId);
-      if (!slot) return;
+      if (!slot) {
+        console.warn('Slot no encontrado para abrir reserva:', slotId);
+        return;
+      }
 
       const root = document.getElementById('modalRoot');
-      root.style.display = 'block';
       const iso = slot.isoBogota || '',
             displayDate = iso ? formatIsoToLocalDate(iso) : formatNiceDate(slot.dateStr),
             displayTime = iso ? formatIsoToLocalTime(iso) : formatSlotTime(slot.timeLabel, slot.timeStr, null);
 
-      // 1. Leemos el correo guardado previamente (si no existe, queda vacío '')
-      const savedEmail = localStorage.getItem('smartflex_user_email') || '';
+      // LECTURA SEGURA: si el navegador en el iframe bloquea el acceso a storage, no romperá la ejecución
+      let savedEmail = '';
+      try {
+        savedEmail = localStorage.getItem('smartflex_user_email') || '';
+      } catch (e) {
+        console.warn('Almacenamiento local restringido por el navegador en este iframe.');
+      }
 
       root.innerHTML = `
         <div class="modal-back" onclick="closeModal()">
@@ -617,7 +692,6 @@
             <form id="bookingForm" class="resv-form">
               <div class="form-row">
                 <label for="email" style="font-weight:700">Correo electrónico *</label>
-                <!-- El valor inicial se precarga con savedEmail -->
                 <input id="email" type="email" autocomplete="email" required placeholder="tu@correo.com" value="${escapeHtml(savedEmail)}">
               </div>
               <input type="hidden" id="slotId" value="${slotId}">
@@ -632,7 +706,12 @@
           </div>
         </div>`;
 
-      document.getElementById('bookingForm').addEventListener('submit', ev => {
+      root.style.display = 'block';
+
+      const formElement = document.getElementById('bookingForm');
+      if(!formElement) return;
+
+      formElement.addEventListener('submit', ev => {
         ev.preventDefault();
         const btn = document.getElementById('confirmBtn'),
               msg = document.getElementById('modalMsg');
@@ -640,10 +719,12 @@
         btn.innerText = 'Procesando...';
         showSpinner('Procesando reserva...');
 
-        // 2. Guardamos el correo ingresado en el almacenamiento local
+        // ESCRITURA SEGURA: no detiene el envío si el navegador rechaza storage
         const emailInputVal = document.getElementById('email').value.trim();
         if (emailInputVal) {
-          localStorage.setItem('smartflex_user_email', emailInputVal);
+          try {
+            localStorage.setItem('smartflex_user_email', emailInputVal);
+          } catch (e) {}
         }
 
         const data = {
@@ -709,8 +790,8 @@
                     <strong>${escapeHtml(b.clase || 'N/A')} (${escapeHtml(b.subnivel || '')})</strong>
                     <div style="margin-top:10px">${prettyDate} — ${prettyTime}</div>
                   </div>
-                  <button class="btn" style="width:100%;background:#d93025;margin-bottom:12px" onclick="closeModal();openCancelModal({bookingId:'${b.bookingId}',token:'${b.cancelToken || ''}'})">Cancelar reserva existente</button>
-                  <button class="btn resv-cancel" style="width:100%" onclick="closeModal()">Cerrar</button>
+                  <button type="button" class="btn" style="width:100%;background:#d93025;margin-bottom:12px" onclick="closeModal();openCancelModal({bookingId:'${b.bookingId}',token:'${b.cancelToken || ''}'})">Cancelar reserva existente</button>
+                  <button type="button" class="btn resv-cancel" style="width:100%" onclick="closeModal()">Cerrar</button>
                 </div>`;
               document.getElementById('bookingForm').parentNode.appendChild(d);
               return;
@@ -729,7 +810,7 @@
           .bookSlot(data);
       });
     }
-
+    
     function showBookingConfirmation(bookingId,localDateStr,localTimeStr,userTz){const root=document.getElementById('modalRoot');root.style.display='block';root.innerHTML=`<div class="modal-back" onclick="closeModal()"><div class="modal" onclick="event.stopPropagation()" style="text-align:center"><div style="font-size:52px;color:#1e8e3e">✓</div><h3>¡Reserva confirmada!</h3><div class="muted" style="margin-bottom:24px">Tu clase ha sido agendada exitosamente.</div><div style="background:#f4f7fb;border-radius:16px;padding:20px;text-align:left;margin-bottom:24px"><div class="muted">FECHA DE LA CLASE</div><strong>${localDateStr||'Fecha no disponible'}</strong><hr style="border:none;border-top:1px dashed #c0d3e6;margin:14px 0"><div class="muted">HORA DE LA CLASE</div><strong>${localTimeStr||'Hora no disponible'}${localTimeStr?` <span class="muted">(${escapeHtml(userTz)})</span>`:''}</strong></div><div class="info-alert"><div class="info-alert-title">¿Cómo conectarte a la clase?</div><p>Los datos de conexión llegarán aproximadamente <strong>una hora antes</strong> al correo registrado.</p><div class="info-alert-highlight"><div>💡</div><div>También podrás encontrar el enlace en la página inicial de tu cuenta de Smart Flex, en <strong>“Enlace de clase”</strong>.</div></div></div><button class="btn" style="width:100%" onclick="closeModal()">Entendido</button></div></div>`;}
 
     // ==========================================================
