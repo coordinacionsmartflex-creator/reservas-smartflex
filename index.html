@@ -602,6 +602,10 @@
       </div><input type="hidden" id="slotId" value="${slotId}"><input type="hidden" id="claseHidden" value="${CLASS_IDX}"><input type="hidden" id="slotIso" value="${iso}"><input type="hidden" id="userTz" value="${USER_TZ}"><div class="resv-actions"><button type="button" class="btn resv-cancel" onclick="closeModal()" style="flex:1">Cancelar</button><button id="confirmBtn" type="submit" class="btn" style="flex:1.5">Confirmar reserva</button></div></form></div></div>`;
       document.getElementById('bookingForm').addEventListener('submit',ev=>{
         ev.preventDefault();const btn=document.getElementById('confirmBtn'),msg=document.getElementById('modalMsg');btn.disabled=true;btn.innerText='Procesando...';showSpinner('Procesando reserva...');
+        const emailInputVal = document.getElementById('email').value.trim();
+        if (emailInputVal) {
+          localStorage.setItem('smartflex_user_email', emailInputVal);
+        }
         const data={subnivel:SUBNIVEL,slotId:document.getElementById('slotId').value,email:document.getElementById('email').value.trim(),clase:document.getElementById('claseHidden').value,slotIso:document.getElementById('slotIso').value,userTz:document.getElementById('userTz').value||USER_TZ,dispositivo_id:getOrCreateDeviceId(),documento:SESSION_DATA.documento,name:SESSION_DATA.nombreCompleto,entryMode:ENTRY_MODE,sourceReferrer:SOURCE_REFERRER};
         google.script.run.withSuccessHandler(res=>{
           hideSpinner();
